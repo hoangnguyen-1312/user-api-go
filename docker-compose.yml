@@ -1,0 +1,40 @@
+version: "3.6"
+services:
+  app:
+    build:
+      context: . 
+      dockerfile: Dockerfile
+    
+    restart: on-failure
+
+    ports:
+      - "8081:8081"
+    depends_on: 
+      - postgres_demo
+      - redis
+    links: 
+      - postgres_demo
+      - redis
+  postgres_demo:
+    build: ./db
+    volumes:
+      - ./db/pgdata:/pgdata
+    ports:
+      - 5432:5432
+    restart: always
+    environment:
+      - POSTGRES_DB=user_system_v1
+      - POSTGRES_USER=THN
+      - POSTGRES_PASSWORD=123456
+      - DATABASE_HOST=postgres_demo 
+  redis:
+    image: redis
+    ports:
+      - "127.0.0.1:6379:6379"
+  
+  nginx:
+    build: "./nginx"
+    ports:
+      - "8099:80"
+    depends_on:
+      - "app"
